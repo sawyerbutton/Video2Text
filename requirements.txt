@@ -1,0 +1,32 @@
+# MP4ToText - Video to Text Transcription Tool
+# Core dependencies
+openai-whisper>=20231117
+ffmpeg-python>=0.2.0
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Command line and configuration
+argparse
+configparser
+pathlib2; python_version < "3.4"
+
+# Progress and logging
+tqdm>=4.65.0
+colorama>=0.4.6  # Cross-platform colored terminal output
+
+# File processing
+pathvalidate>=3.0.0  # Cross-platform path validation
+
+# Optional GPU support
+# torch with CUDA support (will fallback to CPU if CUDA not available)
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Platform specific dependencies
+# Windows specific
+pywin32>=306; sys_platform == "win32"
+# macOS specific  
+pyobjc>=9.0; sys_platform == "darwin" 
