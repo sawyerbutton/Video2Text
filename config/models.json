@@ -1,0 +1,150 @@
+{
+  "whisper_models": {
+    "tiny": {
+      "size_mb": 39,
+      "memory_requirement_gb": 1,
+      "speed": "very_fast",
+      "accuracy": "low",
+      "recommended_for": "快速测试和低资源环境",
+      "description": "最小的模型，适合快速测试",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru"],
+      "download_size": "39MB",
+      "disk_size": "73MB"
+    },
+    "base": {
+      "size_mb": 142,
+      "memory_requirement_gb": 2,
+      "speed": "fast",
+      "accuracy": "medium",
+      "recommended_for": "日常使用和一般用途",
+      "description": "平衡速度和准确性的模型",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it"],
+      "download_size": "142MB",
+      "disk_size": "290MB"
+    },
+    "small": {
+      "size_mb": 244,
+      "memory_requirement_gb": 3,
+      "speed": "medium",
+      "accuracy": "good",
+      "recommended_for": "平衡性能和质量",
+      "description": "中等大小模型，平衡性能",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi"],
+      "download_size": "244MB",
+      "disk_size": "488MB"
+    },
+    "medium": {
+      "size_mb": 769,
+      "memory_requirement_gb": 5,
+      "speed": "medium",
+      "accuracy": "high",
+      "recommended_for": "推荐用于大多数用户",
+      "description": "推荐的默认模型，高准确性",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi", "th", "vi"],
+      "download_size": "769MB",
+      "disk_size": "1.5GB",
+      "default": true
+    },
+    "large": {
+      "size_mb": 1550,
+      "memory_requirement_gb": 8,
+      "speed": "slow",
+      "accuracy": "very_high",
+      "recommended_for": "高质量转录需求",
+      "description": "大型模型，最高准确性",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi", "th", "vi", "nl", "pl"],
+      "download_size": "1550MB",
+      "disk_size": "3.0GB"
+    },
+    "large-v2": {
+      "size_mb": 1550,
+      "memory_requirement_gb": 8,
+      "speed": "slow",
+      "accuracy": "very_high",
+      "recommended_for": "改进的大型模型",
+      "description": "改进版大型模型，更好的性能",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi", "th", "vi", "nl", "pl", "sv", "da"],
+      "download_size": "1550MB",
+      "disk_size": "3.0GB"
+    },
+    "large-v3": {
+      "size_mb": 1550,
+      "memory_requirement_gb": 10,
+      "speed": "slow",
+      "accuracy": "highest",
+      "recommended_for": "最新和最准确的模型",
+      "description": "最新版本，最高准确性和语言支持",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi", "th", "vi", "nl", "pl", "sv", "da", "no", "fi"],
+      "download_size": "1550MB",
+      "disk_size": "3.0GB",
+      "latest": true
+    }
+  },
+  "supported_languages": {
+    "auto": {"name": "自动检测", "code": "auto"},
+    "zh": {"name": "中文", "code": "zh"},
+    "en": {"name": "英文", "code": "en"},
+    "ja": {"name": "日文", "code": "ja"},
+    "ko": {"name": "韩文", "code": "ko"},
+    "fr": {"name": "法文", "code": "fr"},
+    "de": {"name": "德文", "code": "de"},
+    "es": {"name": "西班牙文", "code": "es"},
+    "ru": {"name": "俄文", "code": "ru"},
+    "pt": {"name": "葡萄牙文", "code": "pt"},
+    "it": {"name": "意大利文", "code": "it"},
+    "ar": {"name": "阿拉伯文", "code": "ar"},
+    "hi": {"name": "印地文", "code": "hi"},
+    "th": {"name": "泰文", "code": "th"},
+    "vi": {"name": "越南文", "code": "vi"},
+    "nl": {"name": "荷兰文", "code": "nl"},
+    "pl": {"name": "波兰文", "code": "pl"},
+    "sv": {"name": "瑞典文", "code": "sv"},
+    "da": {"name": "丹麦文", "code": "da"},
+    "no": {"name": "挪威文", "code": "no"},
+    "fi": {"name": "芬兰文", "code": "fi"}
+  },
+  "device_recommendations": {
+    "cuda": {
+      "name": "NVIDIA GPU (CUDA)",
+      "description": "NVIDIA显卡CUDA加速",
+      "recommended_models": ["large-v3", "large", "medium"],
+      "memory_multiplier": 1.2,
+      "speed_boost": 3.0
+    },
+    "mps": {
+      "name": "Apple Silicon GPU (MPS)",
+      "description": "苹果M1/M2/M3芯片GPU加速",
+      "recommended_models": ["large", "medium", "small"],
+      "memory_multiplier": 1.1,
+      "speed_boost": 2.0
+    },
+    "cpu": {
+      "name": "CPU处理",
+      "description": "CPU处理，兼容性最好",
+      "recommended_models": ["medium", "small", "base"],
+      "memory_multiplier": 1.0,
+      "speed_boost": 1.0
+    }
+  },
+  "system_requirements": {
+    "minimum": {
+      "python_version": "3.9",
+      "memory_gb": 4,
+      "disk_space_gb": 5,
+      "recommended_model": "tiny"
+    },
+    "recommended": {
+      "python_version": "3.10",
+      "memory_gb": 8,
+      "disk_space_gb": 10,
+      "recommended_model": "medium"
+    },
+    "high_performance": {
+      "python_version": "3.11",
+      "memory_gb": 16,
+      "disk_space_gb": 20,
+      "recommended_model": "large-v3",
+      "gpu_required": true
+    }
+  }
+} 
