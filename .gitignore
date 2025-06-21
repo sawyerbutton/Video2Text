@@ -198,3 +198,7 @@ results/
 
 # Videos
 videos/
+videos_done/
+videos_large/
+videos_todo/
+*.mp4

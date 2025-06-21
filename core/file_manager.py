@@ -357,6 +357,47 @@ class FileManager:
             'formats_found': list(by_extension.keys())
         }
     
+    def move_processed_file(self, video_path: Path, destination_dir: str) -> bool:
+        """
+        Move a processed video file to destination directory.
+        
+        Args:
+            video_path: Path to the video file to move
+            destination_dir: Destination directory path
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Normalize destination directory path
+            dest_dir = self.platform_utils.normalize_path(destination_dir)
+            
+            # Create destination directory if it doesn't exist
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate destination file path
+            dest_path = dest_dir / video_path.name
+            
+            # Handle file name conflicts
+            counter = 1
+            original_dest_path = dest_path
+            while dest_path.exists():
+                stem = original_dest_path.stem
+                suffix = original_dest_path.suffix
+                dest_path = dest_dir / f"{stem}_{counter}{suffix}"
+                counter += 1
+            
+            # Move the file
+            import shutil
+            shutil.move(str(video_path), str(dest_path))
+            
+            print(f"  Moved to: {dest_path}")
+            return True
+            
+        except Exception as e:
+            print(f"  Warning: Failed to move file {video_path.name}: {e}")
+            return False
+    
     def print_summary(self):
         """Print summary of file manager status."""
         print("=== File Manager Summary ===")

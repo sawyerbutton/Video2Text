@@ -63,9 +63,11 @@ except ImportError as e:
 class MP4ToTextProcessor:
     """Main processor for MP4 to text conversion."""
     
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self, config_manager: ConfigManager, move_to_done: bool = False, done_dir: str = None):
         self.config = config_manager
         self.platform_utils = PlatformUtils()
+        self.move_to_done = move_to_done
+        self.done_dir = done_dir
         
         # Initialize components
         self.file_manager = FileManager(
@@ -289,6 +291,12 @@ class MP4ToTextProcessor:
             self.stats['successful'] += 1
             self.stats['total_duration'] += video_duration
             self.stats['total_processing_time'] += processing_time
+            
+            # Move processed file to done directory if configured
+            if self.move_to_done and self.done_dir:
+                if not self.config.processing_config.quiet:
+                    print(f"  Moving processed file...")
+                self.file_manager.move_processed_file(video_path, self.done_dir)
             
             if not self.config.processing_config.quiet:
                 realtime_factor = processing_time / video_duration if video_duration > 0 else 0
