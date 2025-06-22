@@ -196,9 +196,32 @@ cython_debug/
 # Results
 results/
 
-# Videos
+# Project specific - Video2Text
+# Results and temporary files
+results/
+temp/
+*.wav
+*.tmp
+
+# Video files and directories
 videos/
 videos_done/
 videos_large/
 videos_todo/
 *.mp4
+*.avi
+*.mov
+*.mkv
+
+# Logs
+logs/
+*.log
+
+# Debug and test files
+debug_*.py
+test_*.py
+*_debug.py
+*_test.py
+
+# Problem files (backup)
+*_PROBLEM_FILE.*

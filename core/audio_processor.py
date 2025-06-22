@@ -163,125 +163,151 @@ class AudioProcessor:
             return self._get_video_info_subprocess(video_path)
     
     def _get_video_info_subprocess(self, video_path: Path) -> Dict[str, Any]:
-        """Get video info using subprocess."""
+        """Get video info using subprocess and ffprobe."""
         try:
+            # Determine ffprobe path
+            if self.ffmpeg_path:
+                ffprobe_path = self.ffmpeg_path.replace('ffmpeg', 'ffprobe')
+            else:
+                ffprobe_path = 'ffprobe'  # Hope it's in PATH
+                
             cmd = [
-                self.ffmpeg_path, '-i', str(video_path),
-                '-f', 'null', '-'
+                ffprobe_path,
+                '-v', 'quiet',
+                '-print_format', 'json',
+                '-show_format',
+                '-show_streams',
+                str(video_path)
             ]
             
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='ignore',
                 timeout=30
             )
             
-            # Parse stderr output for info
-            stderr = result.stderr
-            info = {'duration': 0, 'has_audio': False, 'has_video': False}
+            if result.returncode != 0:
+                raise RuntimeError(f"ffprobe error: {result.stderr}")
             
-            # Extract duration
-            duration_match = re.search(r'Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})', stderr)
-            if duration_match:
-                hours, minutes, seconds, centiseconds = map(int, duration_match.groups())
-                info['duration'] = hours * 3600 + minutes * 60 + seconds + centiseconds / 100
+            import json
+            probe_data = json.loads(result.stdout)
             
-            # Check for audio/video streams
-            info['has_audio'] = 'Audio:' in stderr
-            info['has_video'] = 'Video:' in stderr
+            # Extract relevant information
+            info = {
+                'duration': 0.0,
+                'has_video': False,
+                'has_audio': False,
+                'video_codec': '',
+                'audio_codec': '',
+                'width': 0,
+                'height': 0,
+                'fps': 0.0,
+                'bitrate': 0
+            }
             
-            # Extract audio info
-            audio_match = re.search(r'Audio: (\w+).*?(\d+) Hz.*?(\d+) channels?', stderr)
-            if audio_match:
-                info['audio_codec'] = audio_match.group(1)
-                info['audio_sample_rate'] = int(audio_match.group(2))
-                info['audio_channels'] = int(audio_match.group(3))
+            # Parse format info
+            if 'format' in probe_data:
+                format_info = probe_data['format']
+                info['duration'] = float(format_info.get('duration', 0))
+                info['bitrate'] = int(format_info.get('bit_rate', 0))
             
-            # Get file size
-            try:
-                info['size_bytes'] = video_path.stat().st_size
-            except Exception:
-                info['size_bytes'] = 0
+            # Parse streams
+            if 'streams' in probe_data:
+                for stream in probe_data['streams']:
+                    codec_type = stream.get('codec_type', '')
+                    
+                    if codec_type == 'video':
+                        info['has_video'] = True
+                        info['video_codec'] = stream.get('codec_name', '')
+                        info['width'] = int(stream.get('width', 0))
+                        info['height'] = int(stream.get('height', 0))
+                        
+                        # Calculate FPS
+                        r_frame_rate = stream.get('r_frame_rate', '0/1')
+                        if '/' in r_frame_rate:
+                            num, den = r_frame_rate.split('/')
+                            if int(den) > 0:
+                                info['fps'] = float(num) / float(den)
+                    
+                    elif codec_type == 'audio':
+                        info['has_audio'] = True
+                        info['audio_codec'] = stream.get('codec_name', '')
             
             return info
             
         except Exception as e:
+            # Return basic info on error
             print(f"Warning: Failed to get video info: {e}")
-            return {'duration': 0, 'has_audio': False, 'has_video': False, 'size_bytes': 0}
+            return {
+                'duration': 0.0,
+                'has_video': False,
+                'has_audio': False,
+                'video_codec': '',
+                'audio_codec': '',
+                'width': 0,
+                'height': 0,
+                'fps': 0.0,
+                'bitrate': 0
+            }
     
     def extract_audio(self, video_path: Path, output_path: Optional[Path] = None, 
                      progress_callback: Optional[Callable[[float], None]] = None) -> Path:
         """
-        Extract audio from video file with progress monitoring.
+        Extract audio from video file with optional progress monitoring.
         
         Args:
             video_path: Path to input video file
             output_path: Path for output audio file (optional)
-            progress_callback: Callback function for progress updates (0.0 to 1.0)
+            progress_callback: Callback function for progress updates (optional)
             
         Returns:
             Path to extracted audio file
         """
-        if not video_path.exists():
-            raise FileNotFoundError(f"Video file not found: {video_path}")
-        
-        # Generate output path if not provided
         if output_path is None:
-            audio_filename = f"{video_path.stem}.{self.config['output_format']}"
-            output_path = self.temp_dir / audio_filename
+            # Generate output filename based on input
+            output_path = self.temp_dir / f"{video_path.stem}.wav"
         
-        # Get video info for progress calculation
-        video_info = self.get_video_info(video_path)
-        total_duration = video_info.get('duration', 0)
+        # 使用最简单直接的方法
+        cmd = [
+            self.ffmpeg_path,
+            '-i', str(video_path),
+            '-vn',  # No video
+            '-acodec', 'pcm_s16le',
+            '-ar', str(self.config['sample_rate']),
+            '-ac', str(self.config['channels']),
+            '-y',   # Overwrite output
+            str(output_path)
+        ]
         
-        if not video_info.get('has_audio', False):
-            raise ValueError(f"No audio stream found in video: {video_path}")
+        print(f"🎵 提取音频: {video_path.name}")
+        start_time = time.time()
         
-        # Use appropriate extraction method
-        if FFMPEG_PYTHON_AVAILABLE:
-            return self._extract_audio_ffmpeg_python(
-                video_path, output_path, total_duration, progress_callback
-            )
-        else:
-            return self._extract_audio_subprocess(
-                video_path, output_path, total_duration, progress_callback
-            )
-    
-    def _extract_audio_ffmpeg_python(self, video_path: Path, output_path: Path,
-                                   total_duration: float, 
-                                   progress_callback: Optional[Callable[[float], None]]) -> Path:
-        """Extract audio using ffmpeg-python library."""
         try:
-            # Build ffmpeg stream
-            stream = ffmpeg.input(str(video_path))
+            # 简单直接运行，不搞复杂的进度监控
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=300  # 5分钟超时
+            )
             
-            # Audio processing options
-            audio_options = {
-                'acodec': 'pcm_s16le',  # Uncompressed PCM for best quality
-                'ar': self.config['sample_rate'],
-                'ac': self.config['channels']
-            }
+            end_time = time.time()
+            duration = end_time - start_time
             
-            # Apply audio filters if configured
-            if self.config.get('normalize_audio', False):
-                stream = ffmpeg.filter(stream, 'loudnorm')
-            
-            if self.config.get('remove_silence', False):
-                stream = ffmpeg.filter(stream, 'silenceremove', 
-                                     start_periods=1, start_duration=0.1, start_threshold=-50)
-            
-            # Output stream
-            stream = ffmpeg.output(stream, str(output_path), **audio_options)
-            
-            # Run with progress monitoring
-            if progress_callback and total_duration > 0:
-                self._run_ffmpeg_with_progress(stream, total_duration, progress_callback)
-            else:
-                ffmpeg.run(stream, overwrite_output=True, quiet=True)
+            if result.returncode != 0:
+                raise RuntimeError(f"FFmpeg error: {result.stderr}")
             
             if not output_path.exists() or output_path.stat().st_size == 0:
                 raise RuntimeError("Audio extraction failed: output file is empty or missing")
+            
+            print(f"✅ 音频提取完成 (用时: {duration:.1f}秒)")
+            
+            # 如果有进度回调，直接调用100%
+            if progress_callback:
+                progress_callback(1.0)
             
             return output_path
             
@@ -293,117 +319,6 @@ class AudioProcessor:
                 except Exception:
                     pass
             raise RuntimeError(f"Audio extraction failed: {e}")
-    
-    def _extract_audio_subprocess(self, video_path: Path, output_path: Path,
-                                total_duration: float,
-                                progress_callback: Optional[Callable[[float], None]]) -> Path:
-        """Extract audio using subprocess."""
-        try:
-            # Build FFmpeg command
-            cmd = [
-                self.ffmpeg_path,
-                '-i', str(video_path),
-                '-vn',  # No video
-                '-acodec', 'pcm_s16le',
-                '-ar', str(self.config['sample_rate']),
-                '-ac', str(self.config['channels']),
-                '-y',   # Overwrite output
-                str(output_path)
-            ]
-            
-            # Add progress monitoring if callback provided
-            if progress_callback and total_duration > 0:
-                cmd.insert(-1, '-progress')
-                cmd.insert(-1, 'pipe:1')
-                
-                process = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True
-                )
-                
-                self._monitor_ffmpeg_progress(process, total_duration, progress_callback)
-            else:
-                # Run without progress monitoring
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=3600  # 1 hour timeout
-                )
-                
-                if result.returncode != 0:
-                    raise RuntimeError(f"FFmpeg error: {result.stderr}")
-            
-            if not output_path.exists() or output_path.stat().st_size == 0:
-                raise RuntimeError("Audio extraction failed: output file is empty or missing")
-            
-            return output_path
-            
-        except Exception as e:
-            # Cleanup failed output
-            if output_path.exists():
-                try:
-                    output_path.unlink()
-                except Exception:
-                    pass
-            raise RuntimeError(f"Audio extraction failed: {e}")
-    
-    def _run_ffmpeg_with_progress(self, stream, total_duration: float, 
-                                progress_callback: Callable[[float], None]):
-        """Run ffmpeg-python stream with progress monitoring."""
-        try:
-            process = ffmpeg.run_async(stream, pipe_stdout=True, pipe_stderr=True, overwrite_output=True)
-            self._monitor_ffmpeg_progress(process, total_duration, progress_callback)
-        except Exception as e:
-            raise RuntimeError(f"FFmpeg execution failed: {e}")
-    
-    def _monitor_ffmpeg_progress(self, process, total_duration: float,
-                               progress_callback: Callable[[float], None]):
-        """Monitor FFmpeg process and call progress callback."""
-        try:
-            while True:
-                line = process.stdout.readline()
-                if not line:
-                    break
-                
-                line = line.strip()
-                
-                # Look for time progress
-                if line.startswith('out_time_ms='):
-                    try:
-                        time_ms = int(line.split('=')[1])
-                        current_seconds = time_ms / 1000000  # Convert microseconds to seconds
-                        
-                        if total_duration > 0:
-                            progress = min(current_seconds / total_duration, 1.0)
-                            progress_callback(progress)
-                    except (ValueError, IndexError):
-                        continue
-                
-                # Check for completion
-                elif line.startswith('progress=end'):
-                    progress_callback(1.0)
-                    break
-            
-            # Wait for process to complete
-            return_code = process.wait()
-            
-            if return_code != 0:
-                stderr = process.stderr.read() if process.stderr else ""
-                raise RuntimeError(f"FFmpeg failed with return code {return_code}: {stderr}")
-                
-        except Exception as e:
-            # Terminate process if still running
-            if process.poll() is None:
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-            
-            raise RuntimeError(f"FFmpeg progress monitoring failed: {e}")
     
     def get_audio_info(self, audio_path: Path) -> AudioInfo:
         """Get information about an audio file."""

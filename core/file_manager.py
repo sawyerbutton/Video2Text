@@ -128,12 +128,16 @@ class FileManager:
         Returns:
             Path to the output file
         """
-        # Get relative path from input directory
+        # Try to get relative path from input directory
         try:
             relative_path = video_path.relative_to(self.input_dir)
         except ValueError:
             # If not relative to input dir, use just the filename
-            relative_path = video_path.name
+            relative_path = Path(video_path.name)
+        
+        # Ensure relative_path is a Path object
+        if isinstance(relative_path, str):
+            relative_path = Path(relative_path)
             
         # Change extension
         output_name = relative_path.with_suffix(extension)

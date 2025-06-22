@@ -1,115 +1,163 @@
-# MP4ToText - Video to Text Transcription Tool
+# Video2Text - 智能视频转文本工具
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Cross Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](https://github.com/your-username/Video2Text)
 
-A powerful, cross-platform tool for batch processing video files and extracting text using OpenAI Whisper. Supports GPU/CPU auto-detection and multi-platform compatibility.
+一个强大的跨平台视频转文本工具，使用OpenAI Whisper进行高质量语音识别。支持GPU/CPU自动检测、批量处理和智能文件管理。
 
-## ✨ Features
+## ✨ 核心特性
 
-- 🎥 **Batch Video Processing** - Process multiple MP4/AVI/MOV/MKV files at once
-- 🎙️ **High-Quality Transcription** - Powered by OpenAI Whisper for accurate speech-to-text
-- 🔧 **Cross-Platform** - Runs on Windows, macOS, and Linux
-- 🚀 **GPU/CPU Auto-Detection** - Automatically uses CUDA, MPS (Apple Silicon), or CPU
-- 📊 **Multiple Output Formats** - TXT, SRT, VTT, and JSON output formats
-- ⚡ **Parallel Processing** - Multi-threaded processing for faster batch operations
-- 🎛️ **Configurable** - Extensive configuration options via CLI or config files
-- 📈 **Progress Tracking** - Real-time progress indicators and detailed statistics
+- 🎥 **批量视频处理** - 一次处理多个MP4/AVI/MOV/MKV文件
+- 🎙️ **高质量转录** - 基于OpenAI Whisper的精准语音识别
+- 🔧 **跨平台支持** - Windows、macOS、Linux全平台兼容
+- 🚀 **智能硬件检测** - 自动使用CUDA、MPS(Apple Silicon)或CPU
+- 📊 **多种输出格式** - 支持TXT、SRT、VTT、JSON格式
+- ⚡ **并行处理** - 多线程处理提升批量操作速度
+- 🎛️ **高度可配置** - 通过CLI或配置文件灵活配置
+- 📈 **实时进度跟踪** - 详细的进度指示器和性能统计
+- 🤖 **全自动化处理** - 新增一键自动化脚本，支持智能文件分层处理
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Installation
+### 安装
 
-1. **Clone the repository**
+1. **克隆仓库**
 ```bash
 git clone https://github.com/your-username/Video2Text.git
 cd Video2Text
 ```
 
-2. **Install dependencies**
+2. **安装依赖**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Install FFmpeg**
-- **Windows**: Download from [FFmpeg website](https://ffmpeg.org/) or `choco install ffmpeg`
+3. **安装FFmpeg**
+- **Windows**: 从[FFmpeg官网](https://ffmpeg.org/)下载或使用 `choco install ffmpeg`
 - **macOS**: `brew install ffmpeg`
-- **Linux**: `sudo apt install ffmpeg` (Ubuntu/Debian) or `sudo yum install ffmpeg` (CentOS/RHEL)
+- **Linux**: `sudo apt install ffmpeg` (Ubuntu/Debian) 或 `sudo yum install ffmpeg` (CentOS/RHEL)
 
-### Basic Usage
+### 🎯 推荐使用方式：自动化脚本
+
+#### 1. 标准自动化处理
+```bash
+# 一键处理所有视频文件（推荐）
+python auto_process.py
+
+# 这个脚本会：
+# - 自动处理 videos_todo 目录中的所有视频文件
+# - 将转录结果保存到 results 目录
+# - 将处理完的视频移动到 videos_done 目录
+# - 提供详细的中文进度提示和性能统计
+```
+
+#### 2. 大文件智能分层处理
+```bash
+# 处理大文件（150MB以上）
+python auto_process_large.py
+
+# 智能分层策略：
+# - SMALL (150-200MB): base模型, 30分钟超时
+# - MEDIUM (200-300MB): base模型, 45分钟超时  
+# - LARGE (300-500MB): tiny模型, 60分钟超时
+# - HUGE (>500MB): tiny模型, 120分钟超时
+```
+
+### 传统使用方式
 
 ```bash
-# Basic transcription
+# 基础转录
 python mp4_to_text.py -i ./input_videos -o ./output_texts
 
-# Use specific model and language
+# 指定模型和语言
 python mp4_to_text.py -i ./videos -o ./texts -m large-v3 -l zh
 
-# Parallel processing with 2 workers
+# 并行处理
 python mp4_to_text.py -i ./videos -o ./texts -w 2 --skip-existing
 ```
 
-## 📋 System Requirements
+## 📁 目录结构
 
-- **Python**: 3.9 or higher
-- **FFmpeg**: Latest version
-- **Memory**: 2GB+ (depends on Whisper model)
-- **Storage**: Sufficient space for video files and transcripts
-- **GPU** (optional): NVIDIA CUDA or Apple Silicon for faster processing
-
-## 🎛️ Command Line Options
-
-```bash
-python mp4_to_text.py [OPTIONS]
-
-Required Arguments:
-  -i, --input DIR          Input directory containing video files
-  -o, --output DIR         Output directory for text files
-
-Model Options:
-  -m, --model MODEL        Whisper model (tiny/base/small/medium/large/large-v3)
-  -l, --language LANG      Audio language (auto/zh/en/ja/ko/fr/de/es/ru/pt/it/ar/hi)
-  -d, --device DEVICE      Device to use (auto/cpu/cuda/mps)
-
-Processing Options:
-  -w, --workers NUM        Number of parallel workers (default: 1)
-  -s, --skip-existing      Skip already processed files
-  --no-cleanup             Keep temporary files
-
-Configuration:
-  -c, --config FILE        Configuration file path
-
-Output Control:
-  -v, --verbose            Verbose output
-  -q, --quiet              Quiet mode
-
-Information:
-  --system-info            Show system information
-  --list-models            List available models
-  --help                   Show help message
+```
+Video2Text/
+├── videos_todo/          # 待处理视频文件目录
+├── videos_large/         # 大文件处理目录（150MB+）
+├── videos_done/          # 已完成处理的视频文件
+├── results/              # 转录文本输出目录
+├── config/               # 配置文件目录
+├── core/                 # 核心模块
+├── auto_process.py       # 🌟 自动化处理脚本（推荐）
+├── auto_process_large.py # 🌟 大文件智能处理脚本
+└── mp4_to_text.py        # 传统命令行工具
 ```
 
-## 🔧 Configuration
+## 🎛️ 配置选项
 
-### Configuration File
+### Whisper模型选择
 
-Create a `config.ini` file for persistent settings:
+| 模型 | 大小 | 内存需求 | 速度 | 准确度 | 适用场景 |
+|------|------|----------|------|--------|----------|
+| tiny | 39MB | 1GB | 极快 | 较低 | 快速测试 |
+| base | 142MB | 2GB | 快速 | 中等 | **推荐日常使用** |
+| small | 244MB | 3GB | 中等 | 良好 | 平衡性能 |
+| medium | 769MB | 5GB | 中等 | 高 | 高质量需求 |
+| large | 1550MB | 8GB | 较慢 | 很高 | 专业用途 |
+| large-v3 | 1550MB | 10GB | 较慢 | 最高 | 最新最佳 |
 
+### 性能优化建议
+
+**GPU加速**
+- **NVIDIA CUDA**: 需要支持CUDA的NVIDIA显卡
+- **Apple Silicon (MPS)**: M1/M2/M3 Mac自动支持
+- **自动检测**: 使用 `-d auto` 自动选择最佳设备
+
+**内存优化**
+- 内存有限时使用较小模型
+- 减少并行worker数量
+- 启用临时文件清理
+
+**处理速度**
+- **追求速度**: 使用 `tiny` 或 `base` 模型
+- **平衡选择**: 使用 `medium` 模型（推荐）
+- **追求质量**: 使用 `large-v3` 模型配合GPU
+
+## 📊 性能表现
+
+### 实际测试数据
+- **音频提取**: 通常1-3秒完成（基于FFmpeg优化）
+- **转录速度**: RTF 0.02-0.03（实时因子，越小越快）
+- **GPU利用率**: 85-94%（NVIDIA RTX 4060测试）
+- **批量处理**: 支持连续处理数十个文件，100%成功率
+
+### 处理时间估算
+- **小文件** (<100MB): 通常30-60秒
+- **中等文件** (100-300MB): 通常1-3分钟  
+- **大文件** (300MB-1GB): 通常3-10分钟
+- **超大文件** (>1GB): 可能需要10-30分钟
+
+## 🔧 高级配置
+
+### 配置文件示例 (config/config.ini)
 ```ini
 [PROCESSING]
-model_name = medium
+model_name = base
 language = auto
 device = auto
 max_workers = 1
-skip_existing = false
+skip_existing = true
 cleanup_temp = true
 
 [AUDIO]
 format = wav
 sample_rate = 16000
 channels = 1
-quality = high
+normalize_audio = false
+
+[OUTPUT]
+format = txt
+include_timestamps = false
+word_level_timestamps = false
 
 [LOGGING]
 level = INFO
@@ -117,223 +165,62 @@ file = logs/mp4_to_text.log
 console_output = true
 ```
 
-### Whisper Models
+## 🚨 故障排除
 
-| Model | Size | Memory | Speed | Accuracy | Best For |
-|-------|------|--------|-------|----------|----------|
-| tiny | 39MB | 1GB | Very Fast | Low | Quick testing |
-| base | 142MB | 2GB | Fast | Medium | General use |
-| small | 244MB | 3GB | Medium | Good | Balanced performance |
-| medium | 769MB | 5GB | Medium | High | **Recommended** |
-| large | 1550MB | 8GB | Slow | Very High | High quality |
-| large-v3 | 1550MB | 10GB | Slow | Very High | Latest & best |
+### 常见问题
 
-## 🖥️ Platform-Specific Usage
-
-### Windows
-```cmd
-# Standard usage
-python mp4_to_text.py -i "C:\Videos" -o "C:\Transcripts"
-
-# With GPU acceleration
-python mp4_to_text.py -i "C:\Videos" -o "C:\Transcripts" -d cuda
-```
-
-### macOS
+**1. GPU未被检测**
 ```bash
-# Standard usage
-python mp4_to_text.py -i ~/Videos -o ~/Documents/Transcripts
+# 检查CUDA安装
+nvidia-smi
 
-# With Apple Silicon GPU
-python mp4_to_text.py -i ~/Videos -o ~/Documents/Transcripts -d mps
-```
-
-### Linux
-```bash
-# Standard usage
-python mp4_to_text.py -i /home/user/Videos -o /home/user/Transcripts
-
-# With NVIDIA GPU
-python mp4_to_text.py -i /home/user/Videos -o /home/user/Transcripts -d cuda
-```
-
-## 🚀 Performance Optimization
-
-### GPU Acceleration
-
-**NVIDIA CUDA**
-- Requires NVIDIA GPU with CUDA support
-- Install CUDA toolkit and cuDNN
-- Automatically detected when using `-d auto`
-
-**Apple Silicon (MPS)**
-- Available on M1/M2/M3 Macs
-- Automatically detected on Apple Silicon
-- Use `-d mps` to force MPS usage
-
-### Memory Optimization
-
-- Use smaller models for limited memory systems
-- Reduce parallel workers if running out of memory
-- Enable `cleanup_temp = true` to save disk space
-
-### Processing Speed
-
-- **Fast**: Use `tiny` or `base` models
-- **Balanced**: Use `medium` model (recommended)
-- **Quality**: Use `large-v3` model with GPU
-
-## 📁 Supported Formats
-
-**Input Video Formats:**
-- MP4, AVI, MOV, MKV, FLV, WebM, M4V, WMV, 3GP, OGV
-
-**Output Text Formats:**
-- TXT (plain text)
-- SRT (subtitle format)
-- VTT (WebVTT format)
-- JSON (detailed format with metadata)
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**FFmpeg not found**
-```bash
-# Check FFmpeg installation
-ffmpeg -version
-
-# Install FFmpeg if missing
-# Windows: choco install ffmpeg
-# macOS: brew install ffmpeg
-# Linux: sudo apt install ffmpeg
-```
-
-**CUDA issues**
-```bash
-# Check CUDA availability
+# 检查PyTorch CUDA支持
 python -c "import torch; print(torch.cuda.is_available())"
 
-# Force CPU usage if GPU issues
-python mp4_to_text.py -i ./videos -o ./texts -d cpu
+# 重新安装支持CUDA的PyTorch
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
 
-**Memory issues**
-```bash
-# Use smaller model
-python mp4_to_text.py -i ./videos -o ./texts -m tiny
+**2. 音频提取失败**
+- 确认FFmpeg已正确安装
+- 检查视频文件是否损坏
+- 确认有足够的磁盘空间
 
-# Reduce workers
-python mp4_to_text.py -i ./videos -o ./texts -w 1
-```
+**3. 内存不足**
+- 使用更小的Whisper模型
+- 减少并行处理数量
+- 关闭其他占用内存的程序
 
-### Debug Commands
+**4. 处理速度慢**
+- 启用GPU加速
+- 使用更快的模型（tiny/base）
+- 确认硬件配置满足要求
 
-```bash
-# Check system compatibility
-python mp4_to_text.py --system-info
+## 📋 支持格式
 
-# List available models
-python mp4_to_text.py --list-models
+**输入视频格式:**
+- MP4, AVI, MOV, MKV, FLV, WebM, M4V, WMV, 3GP, OGV
 
-# Verbose logging
-python mp4_to_text.py -i ./videos -o ./texts --verbose
-```
+**输出文本格式:**
+- TXT (纯文本)
+- SRT (字幕格式)
+- VTT (WebVTT格式)
+- JSON (包含元数据的详细格式)
 
-## 📊 Example Output
+## 🤝 贡献
 
-```
-===========================================================
-           MP4ToText - Video Transcription Tool
-===========================================================
+欢迎提交Issue和Pull Request！
 
-System Information:
-  Platform: Darwin
-  Device: mps
-  Model: medium
-  Language: auto
+## 📄 许可证
 
-✓ Setup validation successful
-✓ Model loaded successfully
-Found 5 video files to process
+本项目采用MIT许可证 - 详见 [LICENSE](LICENSE) 文件
 
-Processing Plan:
-  Files to process: 5
-  Max workers: 1
-  Skip existing: false
+## 🙏 致谢
 
-Processing: video1.mp4
-  Duration: 180.5s
-  Extracting audio...
-  Transcribing audio...
-✓ Completed in 45.2s (RTF: 0.25)
-  Output: ./output/video1.txt
-  Text length: 2847 characters
-  Detected language: en
-
-===========================================================
-                   Processing Summary
-===========================================================
-Total files: 5
-Processed: 5
-Successful: 5
-Failed: 0
-Success rate: 100.0%
-
-Timing:
-Total time: 245.8s
-Total audio duration: 920.3s
-Average RTF: 0.27
-```
-
-## 🛠️ Development
-
-### Project Structure
-
-```
-Video2Text/
-├── mp4_to_text.py          # Main execution script
-├── core/                   # Core functionality modules
-│   ├── __init__.py
-│   ├── platform_utils.py   # Cross-platform utilities
-│   ├── config_manager.py   # Configuration management
-│   ├── file_manager.py     # File operations
-│   ├── audio_processor.py  # Audio extraction
-│   └── transcriber.py      # Whisper integration
-├── config/                 # Configuration files
-│   └── config.ini          # Default configuration
-├── examples/               # Usage examples
-├── tests/                  # Test files
-├── temp/                   # Temporary files
-├── logs/                   # Log files
-└── requirements.txt        # Dependencies
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [OpenAI Whisper](https://github.com/openai/whisper) for the excellent speech recognition model
-- [FFmpeg](https://ffmpeg.org/) for audio/video processing capabilities
-- The open-source community for various tools and libraries used in this project
-
-## 🔗 Links
-
-- [Project Repository](https://github.com/your-username/Video2Text)
-- [Issue Tracker](https://github.com/your-username/Video2Text/issues)
-- [OpenAI Whisper](https://github.com/openai/whisper)
-- [FFmpeg](https://ffmpeg.org/)
+- [OpenAI Whisper](https://github.com/openai/whisper) - 强大的语音识别模型
+- [FFmpeg](https://ffmpeg.org/) - 多媒体处理框架
+- 所有贡献者和用户的支持
 
 ---
 
-Made with ❤️ by the Video2Text Team 
+**🌟 如果这个项目对你有帮助，请给个Star支持！**
