@@ -14,7 +14,8 @@ from datetime import datetime
 
 # 添加项目根目录到路径
 current_dir = Path(__file__).parent.absolute()
-sys.path.insert(0, str(current_dir))
+parent_dir = current_dir.parent
+sys.path.insert(0, str(parent_dir))
 
 from mp4_to_text import MP4ToTextProcessor
 from core.config_manager import ConfigManager
@@ -22,7 +23,8 @@ from core.file_manager import FileManager
 
 class LargeFileProcessor:
     def __init__(self):
-        self.base_dir = Path(__file__).parent.absolute()
+        # 使用项目根目录（tools的父目录）
+        self.base_dir = Path(__file__).parent.parent.absolute()
         self.videos_dir = self.base_dir / "videos_large"
         self.results_dir = self.base_dir / "results"
         self.done_dir = self.base_dir / "videos_done"

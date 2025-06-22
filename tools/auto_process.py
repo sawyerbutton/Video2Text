@@ -47,6 +47,11 @@ except ImportError:
     class Colors:
         GREEN = YELLOW = RED = BLUE = CYAN = WHITE = BOLD = END = ''
 
+# Add parent directory to path for imports
+script_dir = Path(__file__).parent.absolute()
+parent_dir = script_dir.parent
+sys.path.insert(0, str(parent_dir))
+
 # Import core modules
 try:
     from core import (
@@ -60,6 +65,8 @@ try:
 except ImportError as e:
     print(f"Error: Failed to import core modules: {e}")
     print("Please ensure all dependencies are installed and core modules are available.")
+    print(f"Script directory: {script_dir}")
+    print(f"Parent directory: {parent_dir}")
     sys.exit(1)
 
 
@@ -74,12 +81,13 @@ def print_header():
 
 def validate_directories():
     """验证必要的目录结构"""
-    script_dir = Path(__file__).parent.absolute()
+    # 使用项目根目录（tools的父目录）
+    project_root = Path(__file__).parent.parent.absolute()
     
     # 定义目录路径
-    videos_todo_dir = script_dir / "videos_todo"
-    results_dir = script_dir / "results" 
-    videos_done_dir = script_dir / "videos_done"
+    videos_todo_dir = project_root / "videos_todo"
+    results_dir = project_root / "results" 
+    videos_done_dir = project_root / "videos_done"
     
     # 创建目录（如果不存在）
     videos_todo_dir.mkdir(exist_ok=True)

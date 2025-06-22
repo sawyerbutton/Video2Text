@@ -40,10 +40,10 @@ pip install -r requirements.txt
 
 ### 🎯 推荐使用方式：自动化脚本
 
-#### 1. 标准自动化处理
+#### 1. 标准自动化处理（推荐）
 ```bash
-# 一键处理所有视频文件（推荐）
-python auto_process.py
+# 一键处理所有视频文件（最简单方式）
+python run_auto_process.py
 
 # 这个脚本会：
 # - 自动处理 videos_todo 目录中的所有视频文件
@@ -55,7 +55,7 @@ python auto_process.py
 #### 2. 大文件智能分层处理
 ```bash
 # 处理大文件（150MB以上）
-python auto_process_large.py
+python run_large_process.py
 
 # 智能分层策略：
 # - SMALL (150-200MB): base模型, 30分钟超时
@@ -85,10 +85,16 @@ Video2Text/
 ├── videos_large/         # 大文件处理目录（150MB+）
 ├── videos_done/          # 已完成处理的视频文件
 ├── results/              # 转录文本输出目录
-├── config/               # 配置文件目录
 ├── core/                 # 核心模块
-├── auto_process.py       # 🌟 自动化处理脚本（推荐）
-├── auto_process_large.py # 🌟 大文件智能处理脚本
+├── tools/                # 🛠️ 工具脚本目录
+│   ├── auto_process.py       # 自动化处理脚本
+│   ├── auto_process_large.py # 大文件智能处理脚本
+│   └── quick_check.py        # 系统检查工具
+├── docs/                 # 📚 项目文档
+├── config/               # 配置文件目录
+├── examples/             # 使用示例
+├── run_auto_process.py   # 🌟 便捷启动脚本（推荐）
+├── run_large_process.py  # 🌟 大文件处理启动脚本
 └── mp4_to_text.py        # 传统命令行工具
 ```
 

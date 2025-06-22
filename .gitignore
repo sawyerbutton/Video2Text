@@ -217,7 +217,7 @@ videos_todo/
 logs/
 *.log
 
-# Debug and test files
+# Debug and test files (not in tools/)
 debug_*.py
 test_*.py
 *_debug.py
@@ -225,3 +225,7 @@ test_*.py
 
 # Problem files (backup)
 *_PROBLEM_FILE.*
+
+# Keep tools and docs directories but ignore specific patterns
+!tools/
+!docs/
