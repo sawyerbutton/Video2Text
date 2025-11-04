@@ -1,6 +1,6 @@
 # MP4ToText - Video to Text Transcription Tool
-# Core dependencies
-openai-whisper>=20231117
+# Core dependencies - faster-whisper migration
+faster-whisper>=1.0.0  # Replaces openai-whisper for 2-8x performance boost
 ffmpeg-python>=0.2.0
 torch>=2.0.0
 torchaudio>=2.0.0

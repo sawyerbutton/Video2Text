@@ -78,6 +78,18 @@
       "download_size": "1550MB",
       "disk_size": "3.0GB",
       "latest": true
+    },
+    "turbo": {
+      "size_mb": 809,
+      "memory_requirement_gb": 6,
+      "speed": "very_fast",
+      "accuracy": "high",
+      "recommended_for": "高速转录，适合生产环境",
+      "description": "Turbo模型，8倍速度提升，准确度接近large",
+      "languages": ["auto", "en", "zh", "ja", "ko", "fr", "de", "es", "ru", "pt", "it", "ar", "hi", "th", "vi", "nl", "pl"],
+      "download_size": "809MB",
+      "disk_size": "1.6GB",
+      "faster_whisper_optimized": true
     }
   },
   "supported_languages": {
@@ -106,24 +118,60 @@
   "device_recommendations": {
     "cuda": {
       "name": "NVIDIA GPU (CUDA)",
-      "description": "NVIDIA显卡CUDA加速",
-      "recommended_models": ["large-v3", "large", "medium"],
+      "description": "NVIDIA显卡CUDA加速（推荐 CUDA 12+）",
+      "recommended_models": ["large-v3", "turbo", "large", "medium"],
+      "recommended_compute_type": "int8_float16",
       "memory_multiplier": 1.2,
-      "speed_boost": 3.0
+      "speed_boost": 6.0,
+      "faster_whisper_speedup": "2-8x"
     },
     "mps": {
       "name": "Apple Silicon GPU (MPS)",
       "description": "苹果M1/M2/M3芯片GPU加速",
-      "recommended_models": ["large", "medium", "small"],
+      "recommended_models": ["turbo", "large", "medium", "small"],
+      "recommended_compute_type": "float16",
       "memory_multiplier": 1.1,
-      "speed_boost": 2.0
+      "speed_boost": 4.0,
+      "faster_whisper_speedup": "2-4x"
     },
     "cpu": {
       "name": "CPU处理",
-      "description": "CPU处理，兼容性最好",
+      "description": "CPU处理，兼容性最好（推荐 INT8 量化）",
       "recommended_models": ["medium", "small", "base"],
+      "recommended_compute_type": "int8",
       "memory_multiplier": 1.0,
-      "speed_boost": 1.0
+      "speed_boost": 2.0,
+      "faster_whisper_speedup": "2-4x"
+    }
+  },
+  "compute_types": {
+    "float16": {
+      "name": "FP16半精度",
+      "description": "16位浮点，平衡速度和精度",
+      "memory_usage": "100%",
+      "speed": "fast",
+      "supported_devices": ["cuda", "mps"]
+    },
+    "int8": {
+      "name": "INT8量化",
+      "description": "8位整数，节省内存，速度更快",
+      "memory_usage": "62%",
+      "speed": "very_fast",
+      "supported_devices": ["cuda", "cpu"]
+    },
+    "int8_float16": {
+      "name": "INT8/FP16混合",
+      "description": "混合精度，最佳性能（推荐GPU使用）",
+      "memory_usage": "62%",
+      "speed": "very_fast",
+      "supported_devices": ["cuda"]
+    },
+    "float32": {
+      "name": "FP32全精度",
+      "description": "32位浮点，最高精度但较慢",
+      "memory_usage": "200%",
+      "speed": "slow",
+      "supported_devices": ["cpu"]
     }
   },
   "system_requirements": {

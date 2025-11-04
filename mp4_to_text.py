@@ -82,7 +82,10 @@ class MP4ToTextProcessor:
         
         self.transcriber = WhisperTranscriber(
             model_name=self.config.processing_config.model_name,
-            device=self.config.get_effective_device()
+            device=self.config.get_effective_device(),
+            compute_type=self.config.processing_config.compute_type,
+            batch_size=self.config.processing_config.batch_size,
+            vad_filter=self.config.processing_config.vad_filter
         )
         
         # Processing statistics

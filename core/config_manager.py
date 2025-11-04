@@ -21,6 +21,9 @@ class ProcessingConfig:
     model_name: str = "medium"
     language: str = "auto"
     device: str = "auto"
+    compute_type: str = "auto"  # New: faster-whisper quantization
+    batch_size: int = 1  # New: batch processing
+    vad_filter: bool = False  # New: Voice Activity Detection
     max_workers: int = 1
     skip_existing: bool = False
     cleanup_temp: bool = True
@@ -203,10 +206,13 @@ class ConfigManager:
                 section = self.config['PROCESSING']
                 self.processing_config.model_name = section.get('model_name', self.processing_config.model_name)
                 self.processing_config.language = section.get('language', self.processing_config.language)
+                self.processing_config.compute_type = section.get('compute_type', self.processing_config.compute_type)
+                self.processing_config.batch_size = section.getint('batch_size', self.processing_config.batch_size)
+                self.processing_config.vad_filter = section.getboolean('vad_filter', self.processing_config.vad_filter)
                 self.processing_config.max_workers = section.getint('max_workers', self.processing_config.max_workers)
                 self.processing_config.skip_existing = section.getboolean('skip_existing', self.processing_config.skip_existing)
                 self.processing_config.cleanup_temp = section.getboolean('cleanup_temp', self.processing_config.cleanup_temp)
-                
+
                 # Override device if specified in config
                 config_device = section.get('device', 'auto')
                 if config_device != 'auto':
@@ -259,17 +265,27 @@ class ConfigManager:
                 
         if hasattr(args, 'device') and args.device:
             self.processing_config.device = args.device
-            
+
+        # New faster-whisper parameters
+        if hasattr(args, 'compute_type') and args.compute_type:
+            self.processing_config.compute_type = args.compute_type
+
+        if hasattr(args, 'batch_size') and args.batch_size:
+            self.processing_config.batch_size = args.batch_size
+
+        if hasattr(args, 'vad_filter') and args.vad_filter is not None:
+            self.processing_config.vad_filter = args.vad_filter
+
         if hasattr(args, 'workers') and args.workers:
             self.processing_config.max_workers = args.workers
-            
+
         if hasattr(args, 'skip_existing') and args.skip_existing:
             self.processing_config.skip_existing = args.skip_existing
-            
+
         if hasattr(args, 'verbose') and args.verbose:
             self.processing_config.verbose = args.verbose
             self.logging_config.level = 'DEBUG'
-            
+
         if hasattr(args, 'quiet') and args.quiet:
             self.processing_config.quiet = args.quiet
             self.logging_config.console_output = False
