@@ -55,10 +55,10 @@ sys.path.insert(0, str(parent_dir))
 # Import core modules
 try:
     from core import (
-        ConfigManager, 
-        FileManager, 
-        AudioProcessor, 
-        WhisperTranscriber, 
+        ConfigManager,
+        FileManager,
+        # AudioProcessor removed - faster-whisper handles video directly via PyAV
+        WhisperTranscriber,
         PlatformUtils
     )
     from mp4_to_text import MP4ToTextProcessor

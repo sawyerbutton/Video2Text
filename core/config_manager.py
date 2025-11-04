@@ -329,11 +329,9 @@ class ConfigManager:
                 errors.append(f"Insufficient memory for model '{self.processing_config.model_name}'. "
                             f"Required: {required_memory}GB, Available: {available_memory:.1f}GB")
         
-        # Validate FFmpeg
-        ffmpeg_available, _ = self.platform_utils.check_ffmpeg()
-        if not ffmpeg_available:
-            errors.append("FFmpeg not found. Please install FFmpeg to process video files.")
-            
+        # Note: FFmpeg check removed - faster-whisper uses PyAV which bundles FFmpeg
+        # No system FFmpeg installation required!
+
         return errors
     
     def save_config(self, config_file: Optional[str] = None):

@@ -41,8 +41,8 @@ def read_requirements():
     
     # Fallback basic requirements
     return [
-        'openai-whisper>=20231117',
-        'ffmpeg-python>=0.2.0',
+        'faster-whisper>=1.0.0',  # Replaces openai-whisper for 2-8x performance boost
+        # 'ffmpeg-python>=0.2.0',  # No longer needed - PyAV bundles FFmpeg
         'torch>=2.0.0',
         'torchaudio>=2.0.0',
         'tqdm>=4.65.0',
@@ -125,7 +125,7 @@ setup(
     version="1.0.0",
     author="Video2Text Team",
     author_email="contact@video2text.com",
-    description="Cross-platform video to text transcription tool using OpenAI Whisper",
+    description="Cross-platform video to text transcription tool using faster-whisper",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/your-username/Video2Text",
@@ -166,7 +166,7 @@ setup(
     # Metadata
     classifiers=CLASSIFIERS,
     keywords=[
-        "video", "transcription", "whisper", "speech-to-text", 
+        "video", "transcription", "faster-whisper", "whisper", "speech-to-text",
         "mp4", "audio", "ai", "machine-learning", "cross-platform"
     ],
     license="MIT",
@@ -190,17 +190,10 @@ def print_installation_info():
     print(f"Platform: {platform.system()} {platform.release()}")
     print(f"Python: {sys.version}")
     print("\nNext steps:")
-    print("1. Install FFmpeg if not already installed:")
-    
-    if sys.platform == "win32":
-        print("   - Download from: https://ffmpeg.org/download.html")
-        print("   - Or use: choco install ffmpeg")
-    elif sys.platform == "darwin":
-        print("   - Use Homebrew: brew install ffmpeg")
-    else:
-        print("   - Ubuntu/Debian: sudo apt install ffmpeg")
-        print("   - CentOS/RHEL: sudo yum install ffmpeg")
-    
+    print("1. (Optional) Install GPU support:")
+    print("   - For CUDA: pip install nvidia-cudnn-cu12")
+    print("   - Set environment: source setup_cudnn_env.sh")
+
     print("\n2. Test the installation:")
     print("   mp4-to-text --system-info")
     print("   mp4-to-text --list-models")

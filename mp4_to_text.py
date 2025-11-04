@@ -48,10 +48,10 @@ except ImportError:
 # Import core modules
 try:
     from core import (
-        ConfigManager, 
-        FileManager, 
-        AudioProcessor, 
-        WhisperTranscriber, 
+        ConfigManager,
+        FileManager,
+        # AudioProcessor removed - faster-whisper handles video directly via PyAV
+        WhisperTranscriber,
         PlatformUtils
     )
 except ImportError as e:
@@ -74,12 +74,8 @@ class MP4ToTextProcessor:
             input_dir=self.config.processing_config.input_dir,
             output_dir=self.config.processing_config.output_dir
         )
-        
-        self.audio_processor = AudioProcessor(
-            temp_dir=str(self.platform_utils.get_temp_dir() / 'mp4_to_text'),
-            audio_config=self.config.audio_config.__dict__
-        )
-        
+
+        # Note: AudioProcessor removed - faster-whisper handles video directly via PyAV
         self.transcriber = WhisperTranscriber(
             model_name=self.config.processing_config.model_name,
             device=self.config.get_effective_device(),
@@ -215,72 +211,50 @@ class MP4ToTextProcessor:
         video_duration = 0.0
         
         try:
-            # Validate video file
-            is_valid, error_msg = self.audio_processor.validate_video_file(video_path)
-            if not is_valid:
-                print(f"{Colors.RED}✗ Validation failed: {error_msg}{Colors.END}")
+            # Validate video file exists
+            if not video_path.exists():
+                error_msg = f"Video file not found: {video_path}"
+                print(f"{Colors.RED}✗ {error_msg}{Colors.END}")
                 self.file_manager.mark_processed(
                     video_path, success=False, error=error_msg
                 )
                 return False
-            
-            # Get video info
-            video_info = self.audio_processor.get_video_info(video_path)
-            video_duration = video_info.get('duration', 0.0)
-            
+
             if not self.config.processing_config.quiet:
                 print(f"{Colors.CYAN}Processing: {video_path.name}{Colors.END}")
-                print(f"  Duration: {video_duration:.1f}s")
-            
-            # Extract audio
+                file_size_mb = video_path.stat().st_size / 1024 / 1024
+                print(f"  Size: {file_size_mb:.1f} MB")
+
+            # Transcribe video directly (faster-whisper uses PyAV for video/audio decoding)
             if not self.config.processing_config.quiet:
-                print("  Extracting audio...")
-            
-            def audio_progress(progress):
-                if not self.config.processing_config.quiet and TQDM_AVAILABLE:
-                    pass  # tqdm progress bar handles this
-            
-            audio_path = self.audio_processor.extract_audio(
-                video_path, 
-                progress_callback=audio_progress
-            )
-            
-            if self._shutdown_requested:
-                self.audio_processor.cleanup_temp_audio(audio_path)
-                return False
-            
-            # Transcribe audio
-            if not self.config.processing_config.quiet:
-                print("  Transcribing audio...")
-            
+                print("  Transcribing video...")
+
             def transcribe_progress(progress):
                 if not self.config.processing_config.quiet and TQDM_AVAILABLE:
                     pass  # tqdm progress bar handles this
-            
+
             result = self.transcriber.transcribe(
-                audio_path,
+                video_path,  # Pass video file directly!
                 language=self.config.processing_config.language,
                 progress_callback=transcribe_progress
             )
+
+            # Get duration from transcription result
+            video_duration = result.duration if result.duration else 0.0
             
             if not result.text.strip():
-                error_msg = "No text extracted from audio"
+                error_msg = "No text extracted from video"
                 print(f"{Colors.YELLOW}⚠ Warning: {error_msg}{Colors.END}")
                 self.file_manager.mark_processed(
                     video_path, success=False, error=error_msg,
                     duration=video_duration, processing_time=time.time() - start_time,
                     model_used=self.config.processing_config.model_name
                 )
-                self.audio_processor.cleanup_temp_audio(audio_path)
                 return False
-            
+
             # Save result
             output_path = self.file_manager.get_output_path(video_path)
             self.transcriber.save_result(result, output_path)
-            
-            # Clean up temp file
-            if self.config.processing_config.cleanup_temp:
-                self.audio_processor.cleanup_temp_audio(audio_path)
             
             # Record success
             processing_time = time.time() - start_time
