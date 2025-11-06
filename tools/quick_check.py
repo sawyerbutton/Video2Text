@@ -56,20 +56,11 @@ def check_package_import(package_name, import_name=None):
         return False
 
 def check_ffmpeg():
-    """检查FFmpeg是否可用"""
-    try:
-        result = subprocess.run(['ffmpeg', '-version'], 
-                              capture_output=True, text=True, timeout=10)
-        if result.returncode == 0:
-            version_line = result.stdout.split('\n')[0]
-            print_status("FFmpeg", "OK", version_line)
-            return True
-        else:
-            print_status("FFmpeg", "ERROR", "FFmpeg命令失败")
-            return False
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        print_status("FFmpeg", "ERROR", "FFmpeg未找到或无法执行")
-        return False
+    """检查FFmpeg是否可用（faster-whisper不需要系统FFmpeg，使用PyAV）"""
+    # Note: faster-whisper uses PyAV which bundles FFmpeg libraries
+    # System FFmpeg is no longer required
+    print_status("FFmpeg", "OK", "不再需要 - faster-whisper使用PyAV")
+    return True
 
 def check_project_structure():
     """检查项目结构"""
@@ -81,7 +72,7 @@ def check_project_structure():
         'core/platform_utils.py',
         'core/config_manager.py',
         'core/file_manager.py',
-        'core/audio_processor.py',
+        # 'core/audio_processor.py',  # Removed - faster-whisper handles video directly
         'core/transcriber.py',
         'config/config.ini',
         'config/models.json',
@@ -127,7 +118,7 @@ def check_core_modules():
         'core.platform_utils',
         'core.config_manager',
         'core.file_manager',
-        'core.audio_processor',
+        # 'core.audio_processor',  # Removed - faster-whisper handles video directly
         'core.transcriber'
     ]
     
@@ -143,14 +134,15 @@ def check_core_modules():
     return all_ok
 
 def check_whisper_models():
-    """检查Whisper模型信息"""
+    """检查Faster-Whisper模型信息"""
     try:
-        import whisper
-        models = whisper.available_models()
-        print_status(f"Whisper模型", "OK", f"可用模型: {', '.join(models)}")
+        from faster_whisper import WhisperModel
+        # Available models for faster-whisper
+        models = ['tiny', 'base', 'small', 'medium', 'large-v2', 'large-v3', 'turbo']
+        print_status(f"Faster-Whisper模型", "OK", f"可用模型: {', '.join(models)}")
         return True
     except Exception as e:
-        print_status("Whisper模型", "ERROR", str(e))
+        print_status("Faster-Whisper模型", "ERROR", str(e))
         return False
 
 def check_device_availability():
@@ -197,8 +189,8 @@ def main():
     print("-" * 40)
     packages = [
         ('torch', 'torch'),
-        ('openai-whisper', 'whisper'),
-        ('ffmpeg-python', 'ffmpeg'),
+        ('faster-whisper', 'faster_whisper'),
+        # ('ffmpeg-python', 'ffmpeg'),  # No longer needed - PyAV bundles FFmpeg
         ('tqdm', 'tqdm'),
         ('psutil', 'psutil'),
         ('configparser', 'configparser')
@@ -218,7 +210,7 @@ def main():
     checks.append(check_core_modules())
     print()
     
-    print(f"{Colors.BLUE}5. Whisper模型检查{Colors.ENDC}")
+    print(f"{Colors.BLUE}5. Faster-Whisper模型检查{Colors.ENDC}")
     print("-" * 40)
     checks.append(check_whisper_models())
     print()

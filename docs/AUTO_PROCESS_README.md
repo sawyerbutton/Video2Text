@@ -173,10 +173,12 @@ python auto_process.py --model small --workers 2
 
 ### 常见问题
 
-**Q: 提示"No module named 'whisper'"**
+**Q: 提示"No module named 'faster_whisper'"**
 ```bash
-A: 请安装OpenAI Whisper：
-pip install openai-whisper
+A: 请安装faster-whisper：
+pip install faster-whisper
+# 如需GPU加速，还需安装cuDNN：
+pip install nvidia-cudnn-cu12
 ```
 
 **Q: 处理速度很慢**
